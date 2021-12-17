@@ -37,7 +37,7 @@ def add_tweet():
     DB_CUR = get_database().cursor()
     FMT_TWEET = re.sub(' +', ' ', request.form["text"].replace('\n', ' ').strip())
 
-    DB_CUR.execute(f'INSERT INTO tweets (text, userid, date_day, date_month, date_year) VALUES ("{FMT_TWEET}", "{request.form["userid"]}", "{request.form["date_day"]}", "{request.form["date_month"]}", "{request.form["date_year"]}")')
+    DB_CUR.execute(f'INSERT INTO tweets (text, userid, date_day, date_month, date_year, positive_feeling) VALUES ("{FMT_TWEET}", "{request.form["userid"]}", "{request.form["date_day"]}", "{request.form["date_month"]}", "{request.form["date_year"]}", "{request.form["positive_feeling"]}")')
     get_database().commit()
     return {'error': 0}
 
@@ -47,13 +47,13 @@ def view_page():
     DB_CUR = get_database().cursor()
     PAGE = list(DB_CUR.execute(f'SELECT userid, username, followers FROM pages WHERE userid=="{request.form["userid"]}"'))[0]
     SAVED_TWEETS = list(DB_CUR.execute(f'SELECT COUNT(*) FROM tweets WHERE userid=="{request.form["userid"]}"'))[0][0]
-    return {'error': 0, 'userid': PAGE[0], 'username': PAGE[1], 'followers': PAGE[2], 'saved_tweets': SAVED_TWEETS}
+    return {'error': 0, 'response': {'userid': PAGE[0], 'username': PAGE[1], 'followers': PAGE[2], 'saved_tweets': SAVED_TWEETS}}
 
 
 @APP.route('/view/tweet', methods=['POST'])
 def view_tweet():
     DB_CUR = get_database().cursor()
-    return {'error': 0, 'tweets': [{'userid': x[0], 'text':x[1], 'date_day':x[2], 'date_month':x[3], 'date_year':x[4]} for x in list(DB_CUR.execute(f'SELECT userid, text, date_day, date_month, date_year FROM tweets'))]}
+    return {'error': 0, 'response': {'tweets': [{'userid': x[0], 'text':x[1], 'date_day':x[2], 'date_month':x[3], 'date_year':x[4], 'positive_feeling':x[5]} for x in list(DB_CUR.execute(f'SELECT userid, text, date_day, date_month, date_year, positive_feeling FROM tweets'))]}}
 
 
 @APP.route('/word_ocurrence', methods=['POST'])
@@ -77,7 +77,26 @@ def word_ocurrence():
         else:
             counts[word] = 1
 
-    return {'error': 0, 'word_ocurrence': sorted([{'word': x[0], 'ocurrences': x[1]} for x in counts.items() if x[0].lower() not in STOPWORDS], key=lambda x: x['ocurrences'], reverse=True)[:20]}
+    return {'error': 0, 'response': {'word_ocurrence': sorted([{'word': x[0], 'ocurrences': x[1]} for x in counts.items() if x[0].lower() not in STOPWORDS], key=lambda x: x['ocurrences'], reverse=True)[:20]}}
+
+
+@APP.route('/positive_feeling_percentage', methods=['POST'])
+def positive_feeling_percentage():
+    DB_CUR = get_database().cursor()
+    START_DATE = date(int(request.form['start_year']), int(request.form['start_month']), int(request.form['start_day']))
+    END_DATE = date(int(request.form['end_year']), int(request.form['end_month']), int(request.form['end_day']))
+    QUERY = list(DB_CUR.execute(f'SELECT positive_feeling, date_year, date_month, date_day FROM tweets WHERE userid=="{request.form["userid"]}"'))
+    percentage = 0
+
+    for x in QUERY:
+        TWEET_DATE = date(x[1], x[2], x[3])
+        if START_DATE <= TWEET_DATE and END_DATE >= TWEET_DATE:
+            percentage += x[0]
+
+    LENGHT = len(QUERY) if len(QUERY) != 0 else 1
+
+    percentage /= LENGHT
+    return {'error': 0, 'response': {'percentage': percentage * 100}}
 
 
 if __name__ == '__main__':
