@@ -1,2 +1,2 @@
 all:
-	python src/main.py
+	python backend/main.py
