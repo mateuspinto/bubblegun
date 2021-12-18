@@ -41,7 +41,7 @@ def add_page():
 @APP.route('/add/tweet', methods=['POST'])
 def add_tweet():
     DB_CUR = get_database().cursor()
-    FMT_TWEET = re.sub(' +', ' ', request.form["text"].replace('\n', ' ').strip())
+    FMT_TWEET = re.sub(' +', ' ', request.form["text"].replace('\n', ' ').replace('"', '').strip())
 
     DB_CUR.execute(f'INSERT INTO tweets (text, userid, date_day, date_month, date_year, positive_feeling) VALUES ("{FMT_TWEET}", "{request.form["userid"]}", "{request.form["date_day"]}", "{request.form["date_month"]}", "{request.form["date_year"]}", "{request.form["positive_feeling"]}")')
     get_database().commit()
