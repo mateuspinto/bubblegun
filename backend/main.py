@@ -1,12 +1,14 @@
-from flask import Flask, g, request, make_response
-import sqlite3
-from flask_cors import CORS
 from datetime import date
-import re
-from io import StringIO
 import csv
-from dicttoxml import dicttoxml
+import io
 import json
+import re
+import sqlite3
+
+from dicttoxml import dicttoxml
+from flask import Flask, g, request, make_response, Response
+from flask_cors import CORS
+from wordcloud import WordCloud
 
 STOPWORDS = ['de', 'a', 'o', 'que', 'e', 'do', 'da', 'em', 'um', 'para', 'é', 'com', 'não', 'uma', 'os', 'no', 'se', 'na', 'por', 'mais', 'as', 'dos', 'como', 'mas', 'foi', 'ao', 'ele', 'das', 'tem', 'à', 'seu', 'sua', 'ou', 'ser', 'quando', 'muito', 'há', 'nos', 'já', 'está', 'eu', 'também', 'só', 'pelo', 'pela', 'até', 'isso', 'ela', 'entre', 'era', 'depois', 'sem', 'mesmo', 'aos', 'ter', 'seus', 'quem', 'nas', 'me', 'esse', 'eles', 'estão', 'você', 'tinha', 'foram', 'essa', 'num', 'nem', 'suas', 'meu', 'às', 'minha', 'têm', 'numa', 'pelos', 'elas', 'havia', 'seja', 'qual', 'será', 'nós', 'tenho', 'lhe', 'deles', 'essas', 'esses', 'pelas', 'este', 'fosse', 'dele', 'tu', 'te', 'vocês', 'vos', 'lhes', 'meus', 'minhas', 'teu', 'tua', 'teus', 'tuas', 'nosso', 'nossa', 'nossos', 'nossas', 'dela', 'delas', 'esta', 'estes', 'estas', 'aquele', 'aquela', 'aqueles', 'aquelas', 'isto', 'aquilo', 'estou', 'está', 'estamos', 'estão', 'estive', 'esteve', 'estivemos', 'estiveram', 'estava', 'estávamos', 'estavam', 'estivera', 'estivéramos', 'esteja', 'estejamos', 'estejam', 'estivesse', 'estivéssemos', 'estivessem', 'estiver', 'estivermos', 'estiverem', 'hei', 'há', 'havemos', 'hão', 'houve', 'houvemos', 'houveram', 'houvera', 'houvéramos', 'haja', 'hajamos', 'hajam', 'houvesse', 'houvéssemos', 'houvessem', 'houver', 'houvermos', 'houverem', 'houverei', 'houverá', 'houveremos', 'houverão', 'houveria', 'houveríamos', 'houveriam', 'sou', 'somos', 'são', 'era', 'éramos', 'eram', 'fui', 'foi', 'fomos', 'foram', 'fora', 'fôramos', 'seja', 'sejamos', 'sejam', 'fosse', 'fôssemos', 'fossem', 'for', 'formos', 'forem', 'serei', 'será', 'seremos', 'serão', 'seria', 'seríamos', 'seriam', 'tenho', 'tem', 'temos', 'tém', 'tinha', 'tínhamos', 'tinham', 'tive', 'teve', 'tivemos', 'tiveram', 'tivera', 'tivéramos', 'tenha', 'tenhamos', 'tenham', 'tivesse', 'tivéssemos', 'tivessem', 'tiver', 'tivermos', 'tiverem', 'terei', 'terá', 'teremos', 'terão', 'teria', 'teríamos', 'teriam']
 DATABASE_FILENAME = 'database.db'
@@ -90,23 +92,32 @@ def positive_feeling_percentage():
     START_DATE = date(int(request.form['start_year']), int(request.form['start_month']), int(request.form['start_day']))
     END_DATE = date(int(request.form['end_year']), int(request.form['end_month']), int(request.form['end_day']))
     QUERY = list(DB_CUR.execute(f'SELECT positive_feeling, date_year, date_month, date_day FROM tweets WHERE userid=="{request.form["userid"]}"'))
-    percentage = 0
+    negative = 0
+    neutral = 0
+    positive = 0
 
     for x in QUERY:
         TWEET_DATE = date(x[1], x[2], x[3])
         if START_DATE <= TWEET_DATE and END_DATE >= TWEET_DATE:
-            percentage += x[0]
+            if x[0] == -1:
+                negative += 1
+            elif x[1] == 0:
+                neutral += 1
+            else:
+                positive += 1
 
     LENGHT = len(QUERY) if len(QUERY) != 0 else 1
 
-    percentage /= LENGHT
-    return {'error': 0, 'response': {'percentage': percentage * 100}}
+    negative = negative / LENGHT * 100
+    neutral = neutral / LENGHT * 100
+    positive = positive / LENGHT * 100
+    return {'error': 0, 'response': {'negative_percentage': negative, 'neutral_percentage': neutral, 'positive_percentage': positive}}
 
 
 @APP.route('/csv/all_pages', methods=['GET'])
 def csv__all_pages():
     DB_CUR = get_database().cursor()
-    dest = StringIO()
+    dest = io.StringIO()
     writer = csv.writer(dest)
     writer.writerow(['userid', 'username', 'followers'])
 
@@ -122,7 +133,7 @@ def csv__all_pages():
 @APP.route('/csv/all_tweets', methods=['GET'])
 def csv__all_tweets():
     DB_CUR = get_database().cursor()
-    dest = StringIO()
+    dest = io.StringIO()
     writer = csv.writer(dest)
     writer.writerow(['text', 'date_day', 'date_month', 'date_year', 'positive_feeling', 'userid', 'username', 'followers'])
 
@@ -177,6 +188,27 @@ def json__all_tweets():
     output.headers["Content-Disposition"] = "attachment; filename=bubblegun_all_tweets.json"
     output.headers["Content-type"] = "text/json"
     return output
+
+
+@APP.route('/wordcloud', methods=['POST'])
+def wordcloud():
+
+    DB_CUR = get_database().cursor()
+    img = io.BytesIO()
+
+    START_DATE = date(int(request.form['start_year']), int(request.form['start_month']), int(request.form['start_day']))
+    END_DATE = date(int(request.form['end_year']), int(request.form['end_month']), int(request.form['end_day']))
+    text = ""
+
+    for x in DB_CUR.execute(f'SELECT text, date_year, date_month, date_day FROM tweets WHERE userid=="{request.form["userid"]}"'):
+        TWEET_DATE = date(x[1], x[2], x[3])
+        if START_DATE <= TWEET_DATE and END_DATE >= TWEET_DATE:
+            text += x[0] + ' '
+
+    wordcloud = WordCloud(stopwords=STOPWORDS, background_color="black", width=1600, height=800).generate(text)
+    wordcloud.to_image().save(img, 'PNG')
+
+    return Response(img.getvalue(), mimetype='image/png')
 
 
 if __name__ == '__main__':
