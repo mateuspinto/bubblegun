@@ -1,1 +1,1 @@
-# bubblegun-api
+# bubblegun
