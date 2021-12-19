@@ -203,10 +203,10 @@ def wordcloud():
         if START_DATE <= TWEET_DATE and END_DATE >= TWEET_DATE:
             text += x[0] + ' '
 
-    wordcloud = WordCloud(stopwords=STOPWORDS, background_color="black", width=1600, height=800).generate(text)
-    wordcloud.to_image().save(img, 'PNG')
+    wordcloud = WordCloud(stopwords=STOPWORDS, background_color="black", width=800, height=400).generate(text)
+    wordcloud.to_file('frontend/wordcloud.png')
 
-    return Response(img.getvalue(), mimetype='image/png')
+    return {'error': 0, 'response': {'link': 'frontend/wordcloud.png'}}
 
 
 if __name__ == '__main__':

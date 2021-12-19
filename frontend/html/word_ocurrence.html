@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<body id="body">
+		<h2>Ocorrência de palavras</h2>
+
+		<hr />
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-auto">
+					<h2>Data de início</h2>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="start_day"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="start_month"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="start_year"
+					/>
+				</div>
+				<div class="col-md-auto">
+					<h2>Data de fim</h2>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="end_day"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="end_month"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="end_year"
+					/>
+				</div>
+			</div>
+
+			<br />
+
+			<div class="row">
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="text"
+						placeholder="Candidato A"
+						id="candidate_0"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="text"
+						placeholder="Candidato B"
+						id="candidate_1"
+					/>
+				</div>
+			</div>
+
+			<br />
+			<div class="col text-center">
+				<button type="button" class="btn btn-primary btn-lg" id="button">
+					Recuperar informações
+				</button>
+			</div>
+		</div>
+
+		<div id="content_under"></div>
+	</body>
+
+	<script>
+		$("#button").click(function () {
+			let html = "";
+
+			let form_data = {
+				start_day: $("#start_day").val(),
+				start_month: $("#start_month").val(),
+				start_year: $("#start_year").val(),
+				end_day: $("#end_day").val(),
+				end_month: $("#end_month").val(),
+				end_year: $("#end_year").val(),
+				userid: $("#candidate_0").val(),
+			};
+
+			$.ajax({
+				url: "http://localhost:8080/word_ocurrence",
+				type: "POST",
+				data: form_data,
+			})
+				.done(function (result) {
+					html += "<h4> " + $("#candidate_0").val() + " </h4> <br><br>";
+
+					result["response"]["word_ocurrence"].forEach((e) => {
+						html += e["word"] + " - " + e["ocurrences"] + "<br>";
+					});
+
+					html += "<br><hr><br>";
+				})
+				.fail(function (jqXHR, textStatus) {
+					console.log("Request failed: " + textStatus);
+				})
+				.always();
+
+			form_data = {
+				start_day: $("#start_day").val(),
+				start_month: $("#start_month").val(),
+				start_year: $("#start_year").val(),
+				end_day: $("#end_day").val(),
+				end_month: $("#end_month").val(),
+				end_year: $("#end_year").val(),
+				userid: $("#candidate_1").val(),
+			};
+
+			$.ajax({
+				url: "http://localhost:8080/word_ocurrence",
+				type: "POST",
+				data: form_data,
+			})
+				.done(function (result) {
+					html += "<h4> " + $("#candidate_1").val() + " </h4> <br><br>";
+
+					result["response"]["word_ocurrence"].forEach((e) => {
+						html += e["word"] + " - " + e["ocurrences"] + "<br>";
+					});
+
+					html += "<br><hr><br>";
+
+					$("#content_under").html(html);
+				})
+				.fail(function (jqXHR, textStatus) {
+					console.log("Request failed: " + textStatus);
+				})
+				.always();
+		});
+	</script>
+</html>

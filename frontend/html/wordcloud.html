@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<body id="body">
+		<h2>Nuvem de palavras</h2>
+
+		<hr />
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-auto">
+					<h2>Data de início</h2>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="start_day"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="start_month"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="start_year"
+					/>
+				</div>
+				<div class="col-md-auto">
+					<h2>Data de fim</h2>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="end_day"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="end_month"
+					/>
+				</div>
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="number"
+						id="end_year"
+					/>
+				</div>
+			</div>
+
+			<br />
+
+			<div class="row">
+				<div class="col-sm">
+					<input
+						class="form-control form-control-lg"
+						type="text"
+						placeholder="Candidato"
+						id="userid"
+					/>
+				</div>
+				<div class="col-sm">
+					<button type="button" class="btn btn-primary btn-lg" id="button">
+						Recuperar informações
+					</button>
+				</div>
+			</div>
+
+			<br />
+			<hr>
+			<br>
+		</div>
+
+		<div class="col text-center">
+			<img id="content_under" height="400px" width="800px" src='../wordcloud.png' style="display: none;"></div>
+		</div>
+		
+	</body>
+
+	<script>
+		$("#button").click(function () {
+			let html = "";
+
+			let form_data = {
+				start_day: $("#start_day").val(),
+				start_month: $("#start_month").val(),
+				start_year: $("#start_year").val(),
+				end_day: $("#end_day").val(),
+				end_month: $("#end_month").val(),
+				end_year: $("#end_year").val(),
+				userid: $("#userid").val(),
+			};
+
+			$.ajax({
+				url: "http://localhost:8080/wordcloud",
+				type: "POST",
+				data: form_data,
+			})
+				.done(function (result) {
+					d = new Date();
+					$("#content_under").attr("src", "/wordcloud.png?"+d.getTime());
+					$("#content_under").show();
+				})
+				.fail(function (jqXHR, textStatus) {
+					console.log("Request failed: " + textStatus);
+				})
+				.always();
+		});
+	</script>
+</html>
