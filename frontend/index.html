@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, shrink-to-fit=no"
+		/>
+		<link
+			rel="stylesheet"
+			href="lib/bootstrap-4.6.0-dist/css/bootstrap.min.css"
+		/>
+		<link rel="stylesheet" href="css/sidebar.css" />
+		<link rel="stylesheet" href="css/fix_a.css" />
+		<link rel="icon" href="favicon.ico" />
+
+		<title>Bubble gun</title>
+	</head>
+
+	<body class="bg-dark text-light" style="height: 100%">
+		<div class="vertical-nav bg-dark" id="sidebar">
+			<div class="py-4 px-3 mb-4">
+				<div class="media d-flex align-items-center">
+					<img
+						src="svg/bubble.jpg"
+						alt="..."
+						width="65"
+						height="65"
+						class="mr-3 rounded-circle img-thumbnail bg-dark"
+					/>
+					<div class="media-body bg-dark">
+						<h4 class="m-0">Bubble gun</h4>
+						<a href="https://gitlab.com/mateuspinto" target="_blank">
+							<p class="font-weight-light mb-0 text-light">@mateuspinto</p>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<ul class="nav flex-column bg-dark mb-0">
+				<li
+					class="nav-item nav-link font-italic hand-link sidebar-hide"
+					id="link-about"
+				>
+					Sobre
+				</li>
+
+				<li
+					class="nav-item nav-link font-italic hand-link sidebar-hide"
+					id="view-all-pages"
+				>
+					Visualizar todas as páginas
+				</li>
+
+				<li
+					class="nav-item nav-link font-italic hand-link sidebar-hide"
+					id="view-all-tweets"
+				>
+					Visualizar todos os tweets
+				</li>
+
+				<p class="font-weight-bold text-uppercase px-3 small py-4 mb-0">
+					Análises
+				</p>
+
+				<li
+					class="nav-item nav-link font-italic hand-link sidebar-hide"
+					id="percentage"
+				>
+					Porcentagem de sentimentos
+				</li>
+
+				<p class="font-weight-bold text-uppercase px-3 small py-4 mb-0">
+					Baixar páginas
+				</p>
+				<a href="http://localhost:8080/csv/all_pages">
+					<li
+						class="nav-item nav-link font-italic hand-link sidebar-hide"
+						id="bissection"
+					>
+						CSV
+					</li>
+				</a>
+				<a href="http://localhost:8080/json/all_pages">
+					<li
+						class="nav-item nav-link font-italic hand-link sidebar-hide"
+						id="bissection"
+					>
+						JSON
+					</li>
+				</a>
+				<a href="http://localhost:8080/xml/all_pages">
+					<li
+						class="nav-item nav-link font-italic hand-link sidebar-hide"
+						id="bissection"
+					>
+						XML
+					</li>
+				</a>
+
+				<p class="font-weight-bold text-uppercase px-3 small py-4 mb-0">
+					Baixar tweets
+				</p>
+				<a href="http://localhost:8080/csv/all_tweets">
+					<li
+						class="nav-item nav-link font-italic hand-link sidebar-hide"
+						id="bissection"
+					>
+						CSV
+					</li>
+				</a>
+				<a href="http://localhost:8080/json/all_tweets">
+					<li
+						class="nav-item nav-link font-italic hand-link sidebar-hide"
+						id="bissection"
+					>
+						JSON
+					</li>
+				</a>
+				<a href="http://localhost:8080/xml/all_tweets">
+					<li
+						class="nav-item nav-link font-italic hand-link sidebar-hide"
+						id="bissection"
+					>
+						XML
+					</li>
+				</a>
+			</ul>
+		</div>
+
+		<div class="page-content p-5" id="content">
+			<button type="button" class="btn btn-warning" id="sidebar-show">
+				<img src="svg/sidebar-icon.svg" width="30" height="30" />
+			</button>
+			<div id="page" class="sidebar-hide" style="height: 100%"></div>
+		</div>
+
+		<script src="lib/jquerry-3.6.0/jquery-3.6.0.min.js"></script>
+		<script src="lib/bootstrap-4.6.0-dist/js/bootstrap.bundle.min.js"></script>
+		<script>
+			const openAbout = () => $("#page").load("html/about.html");
+
+			$(document).ready(openAbout);
+
+			$("#link-about").click(openAbout);
+
+			$("#view-all-tweets").click(() =>
+				$("#page").load("html/view_all_tweets.html")
+			);
+
+			$("#view-all-pages").click(() =>
+				$("#page").load("html/view_all_pages.html")
+			);
+
+			$("#percentage").click(() => $("#page").load("html/percentage.html"));
+
+			// $("#bin-dec-float").click(() =>
+			// 	$("#page").load("html/bin-dec/float.html")
+			// );
+
+			$("#sidebar-show").click(function () {
+				$("#sidebar").toggleClass("active", true);
+				$("#content").toggleClass("active", true);
+			});
+			$(".sidebar-hide").click(function () {
+				$("#sidebar").toggleClass("active", false);
+				$("#content").toggleClass("active", false);
+			});
+		</script>
+	</body>
+</html>

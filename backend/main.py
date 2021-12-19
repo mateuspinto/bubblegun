@@ -51,15 +51,13 @@ def add_tweet():
 @APP.route('/view/page', methods=['POST'])
 def view_page():
     DB_CUR = get_database().cursor()
-    PAGE = list(DB_CUR.execute(f'SELECT userid, username, followers FROM pages WHERE userid=="{request.form["userid"]}"'))[0]
-    SAVED_TWEETS = list(DB_CUR.execute(f'SELECT COUNT(*) FROM tweets WHERE userid=="{request.form["userid"]}"'))[0][0]
-    return {'error': 0, 'response': {'userid': PAGE[0], 'username': PAGE[1], 'followers': PAGE[2], 'saved_tweets': SAVED_TWEETS}}
+    return {'error': 0, 'response': {'pages': [{'userid': x[0], 'username':x[1], 'followers':x[2]} for x in list(DB_CUR.execute('SELECT userid, username, followers FROM pages'))]}}
 
 
 @APP.route('/view/tweet', methods=['POST'])
 def view_tweet():
     DB_CUR = get_database().cursor()
-    return {'error': 0, 'response': {'tweets': [{'userid': x[0], 'text':x[1], 'date_day':x[2], 'date_month':x[3], 'date_year':x[4], 'positive_feeling':x[5]} for x in list(DB_CUR.execute(f'SELECT userid, text, date_day, date_month, date_year, positive_feeling FROM tweets'))]}}
+    return {'error': 0, 'response': {'tweets': [{'userid': x[0], 'text':x[1], 'date_day':x[2], 'date_month':x[3], 'date_year':x[4], 'positive_feeling':x[5]} for x in list(DB_CUR.execute('SELECT userid, text, date_day, date_month, date_year, positive_feeling FROM tweets'))]}}
 
 
 @APP.route('/word_ocurrence', methods=['POST'])
@@ -108,9 +106,9 @@ def positive_feeling_percentage():
 
     LENGHT = len(QUERY) if len(QUERY) != 0 else 1
 
-    negative = negative / LENGHT * 100
-    neutral = neutral / LENGHT * 100
-    positive = positive / LENGHT * 100
+    negative = round(negative / LENGHT * 100, 2)
+    neutral = round(neutral / LENGHT * 100, 2)
+    positive = round(positive / LENGHT * 100, 2)
     return {'error': 0, 'response': {'negative_percentage': negative, 'neutral_percentage': neutral, 'positive_percentage': positive}}
 
 

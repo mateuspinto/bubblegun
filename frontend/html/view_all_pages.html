@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<body id="body">
+		<h2>Todas as páginas</h2>
+
+		<hr />
+
+		<div id="tweets"></div>
+	</body>
+
+	<script src="../lib/jquerry-3.6.0/jquery-3.6.0.min.js"></script>
+	<script src="../lib/bootstrap-4.6.0-dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$.ajax({
+				url: "http://localhost:8080/view/page",
+				type: "POST",
+			})
+				.done(function (result) {
+					let html = "";
+					result["response"]["pages"].forEach((e) => {
+						html +=
+							"<h4> (" +
+							e["userid"] +
+							") " +
+							e["username"] +
+							" - " +
+							e["followers"] +
+							" seguidores</h4><br><br>";
+					});
+					$("#tweets").html(html);
+				})
+				.fail(function (jqXHR, textStatus) {
+					console.log("Request failed: " + textStatus);
+				})
+				.always();
+		});
+	</script>
+</html>

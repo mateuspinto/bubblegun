@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<body id="body">
+		<h2>Todos os tweets</h2>
+
+		<hr />
+
+		<div id="tweets"></div>
+	</body>
+
+	<script>
+		$(document).ready(function () {
+			$.ajax({
+				url: "http://localhost:8080/view/tweet",
+				type: "POST",
+			})
+				.done(function (result) {
+					html = "";
+					result["response"]["tweets"].forEach((e) => {
+						html +=
+							"<h4> (" +
+							e["positive_feeling"] +
+							") " +
+							e["userid"] +
+							" - " +
+							e["date_day"] +
+							"/" +
+							e["date_month"] +
+							"/" +
+							e["date_year"] +
+							"</h4>" +
+							e["text"] +
+							"<br><br>";
+					});
+					$("#tweets").html(html);
+				})
+				.fail(function (jqXHR, textStatus) {
+					console.log("Request failed: " + textStatus);
+				})
+				.always();
+		});
+	</script>
+</html>
