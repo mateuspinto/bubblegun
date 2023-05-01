@@ -2,7 +2,7 @@ autopep8==1.6.0
 click==8.0.3
 cycler==0.11.0
 dicttoxml==1.7.4
-Flask==2.0.2
+Flask==2.3.2
 Flask-Cors==3.0.10
 fonttools==4.28.4
 itsdangerous==2.0.1
